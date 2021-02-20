@@ -14,11 +14,15 @@ connection.query(authorTableQuery, function(error, results, fields) {
     console.log(results);
 })
 
-const newColumnAdd = 'ALTER TABLE authors ADD COLUMN mentor Varchar(30), ADD FOREIGN KEY fk_foreign_key(mentor) REFERENCES authors(author_no)'
+const newColumnAdd = 'ALTER TABLE authors ADD COLUMN mentor Varchar(30)'
 
 
 connection.query(newColumnAdd, function(error, results, fields) {
     if (error) throw error;
     console.log(results);
 })
+
+
+
+
 connection.end();
