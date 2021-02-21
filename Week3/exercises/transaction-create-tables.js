@@ -11,7 +11,7 @@ const connection = mysql.createConnection({
 connection.connect();
 
 const accountTableQuery = "CREATE TABLE account (account_number INT primary key, balance FLOAT)"
-const account_changesTableQuery = "CREATE TABLE account_changes(change_number INT, account_number INT, amount FLOAT, changed_date DATE, remark Varchar(30))"
+const account_changesTableQuery = "CREATE TABLE account_changes(change_number INT primary key, account_number INT, amount FLOAT, changed_date DATE, remark Varchar(30))"
 
 connection.query(accountTableQuery, function(error, results) {
     if (error) throw error;
