@@ -3,9 +3,16 @@ const bodyParser = require("body-parser");
 const app = express();
 app.use(bodyParser.json());
 const path = require('path');
+const Joi = require('joi');
 
 const db =  require ("./db");
+
+const { nextTick } = require('process');
 const collection = "todo";
+
+const schema = Joi.object().keys({
+    todo : Joi.string().required()
+});
 
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
@@ -36,14 +43,29 @@ app.put('/:id', (req, res) => {
 });
 
 
-app.post('/', (req,res)=> {
+app.post('/', (req, res, next)=> {
     const userInput = req.body;
-    db.getDB().collection(collection).insertOne(userInput, (err, results)=> {
-        if(err)
-            console.log(err);
-        else
-            res.json({results : results, document: results.ops[0]})
+
+    Joi.validate(userInput, schema, (err, results) => {
+        if(err) {
+            const error = new Error("Invalid Input");
+            error.status = 400;
+            next(error);
+        }
+        else {
+            db.getDB().collection(collection).insertOne(userInput, (err, results)=> {
+                if(err) {
+                    const error = new Error("Failed to insert Todo Document");
+                    error.status = 400;
+                    next(error);
+                }
+                else
+                    res.json({results : results, document: results.ops[0], msg: "Successfully inserted Todo!!!", error : null})
+            })
+        }
     })
+
+
 })
 
 app.delete('/:id', (req, res) => {
@@ -57,7 +79,13 @@ app.delete('/:id', (req, res) => {
     });
 });
 
-
+app.use((err, req, res, next) => {
+    res.status(err.status).json({
+        error : {
+            message : err.message
+        }
+    })
+})
 
 
 db.connect((err) => {
